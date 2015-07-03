@@ -214,70 +214,9 @@ PHP_METHOD(McpackHessianClient, __call) {
 	}
 }
 
-/* {{{ proto McpackHessianClient::postData(array data)
- * do http request, and write the response to a string
- **/
-PHP_METHOD(McpackHessianClient, postData) {
-	zend_class_entry *ce;
-	zval *p_this, *z_url, *method, *content, *result;
-	php_stream *stream;
-	php_stream_context *context = NULL;
-	p_this = getThis();
-
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, p_this,
-				"Oz", &ce, mcphessian_ce_ptr, &content) == FAILURE) {
-		return;
-	}
-
-	p_this = getThis();
-	z_url = zend_read_property(mcphessian_ce_ptr, p_this, ZEND_STRL("url"), 1 TSRMLS_CC);
-	convert_to_string(z_url);
-	char *url = Z_STRVAL_P(z_url);
-
-	// set options of request
-	context = php_stream_context_alloc();
-	MAKE_STD_ZVAL(method);
-	ZVAL_STRING(method, "POST", 0);
-	php_stream_context_set_option(context, "http", "method", method);
-	php_stream_context_set_option(context, "http", "content", content);
-
-	// read data from stream
-	stream = php_stream_open_wrapper_ex(url, "rb", REPORT_ERRORS, NULL, context);
-	if (stream) {
-		size_t read_len = 0, step_size = 256;
-		char *tmp = (char *) emalloc(step_size);
-		size_t total = sizeof(tmp);
-		char *ptr = tmp;
-		while (!php_stream_eof(stream)) {
-			char buffer[step_size];
-			size_t len = php_stream_read(stream, buffer, step_size);
-			if (len > 0) {
-				if (len > (total - read_len)) {
-					total += step_size;
-					tmp = (char *) erealloc(tmp, total);
-					ptr = tmp + read_len;
-				}
-				memcpy(ptr, buffer, len);
-				ptr += len;
-				read_len += len;
-			} else {
-				break;
-			}
-		}
-		*ptr = '\0';
-		MAKE_STD_ZVAL(result);
-		ZVAL_STRING(result, tmp, 0);
-		RETURN_ZVAL(result, 1, 0);
-		php_stream_close(stream);
-	}
-	RETURN_NULL();
-}
-/* }}} */
-
 zend_function_entry mcphessian_methods[] = {
 	PHP_ME(McpackHessianClient, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(McpackHessianClient, getUrl, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(McpackHessianClient, postData, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(McpackHessianClient, __call, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
