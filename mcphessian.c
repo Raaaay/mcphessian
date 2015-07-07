@@ -138,7 +138,7 @@ static zval *mcpack2array(zval *data) {
 
 static zval *array2mcpack(zval *data) {
 	if (Z_TYPE_P(data) != IS_ARRAY) {
-		php_error(E_ERROR, "parameter type should be array.");
+		php_error(E_WARNING, "parameter type should be array.");
 	}
 	
 	zval *mc_pack_v;
@@ -172,8 +172,8 @@ PHP_METHOD(McpackHessianClient, __call) {
 	p_this = getThis();
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, p_this, 
 		"Osz", &ce, mcphessian_ce_ptr, &func_name, &func_name_len, &args) == FAILURE) {
-		php_error(E_ERROR, "parse parameters error.");
-		return;
+		php_error(E_WARNING, "parse parameters error.");
+		RETURN_NULL();
 	}
 
 	// init params
@@ -196,7 +196,12 @@ PHP_METHOD(McpackHessianClient, __call) {
 
 	// read data from stream
 	php_stream *stream = php_stream_open_wrapper_ex(url, "rb", REPORT_ERRORS, NULL, context);
-	ret_str = php_stream_get_line(stream, NULL, max_len, &return_len);
+	if (stream) {
+		ret_str = php_stream_get_line(stream, NULL, max_len, &return_len);
+	} else {
+		php_error(E_WARNING, "failed to open stream %s.", url);
+		RETURN_NULL();
+	}
 	MAKE_STD_ZVAL(tmp);
 	ZVAL_STRINGL(tmp, ret_str, return_len, 0);
 	result = mcpack2array(tmp);
@@ -209,7 +214,7 @@ PHP_METHOD(McpackHessianClient, __call) {
 		zend_hash_find(Z_ARRVAL_P(result), "result", 7, (void **)&ret_val);
 		RETURN_ZVAL(*ret_val, 1, 0);
 	} else {
-		php_error(E_ERROR, "return value illegal.");
+		php_error(E_WARNING, "return value illegal.");
 		RETURN_NULL();
 	}
 }
