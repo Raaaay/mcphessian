@@ -177,6 +177,7 @@ PHP_METHOD(McpackHessianClient, __call) {
 	}
 
 	// init params
+	MAKE_STD_ZVAL(params);
 	array_init(params);
 	add_assoc_string(params, "jsonrpc", "2.0", 0);
 	add_assoc_string(params, "method", func_name, 0);
