@@ -220,10 +220,13 @@ PHP_METHOD(McpackHessianClient, __call) {
 	}
 }
 
+ZEND_BEGIN_ARG_INFO_EX(php_method_two_args, 0, 0, 2)
+ZEND_END_ARG_INFO()
+
 zend_function_entry mcphessian_methods[] = {
 	PHP_ME(McpackHessianClient, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(McpackHessianClient, getUrl, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(McpackHessianClient, __call, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(McpackHessianClient, __call, php_method_two_args, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
